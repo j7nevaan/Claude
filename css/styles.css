@@ -553,7 +553,7 @@ h1,h2,h3,h4,h5 {
 .gallery-item {
   background: linear-gradient(135deg, var(--dark-green), var(--bright-green));
   border-radius: var(--radius);
-  height: 220px;
+  height: 260px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -564,6 +564,14 @@ h1,h2,h3,h4,h5 {
   position: relative;
   overflow: hidden;
 }
+.gallery-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform .4s;
+}
+.gallery-item:hover img { transform: scale(1.06); }
 .gallery-item:hover { transform: scale(1.03); }
 .gallery-label {
   position: absolute;
