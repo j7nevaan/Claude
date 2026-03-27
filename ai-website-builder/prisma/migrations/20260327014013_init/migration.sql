@@ -1,0 +1,50 @@
+-- CreateTable
+CREATE TABLE "Project" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL,
+    "status" TEXT NOT NULL DEFAULT 'draft',
+    "currentStep" INTEGER NOT NULL DEFAULT 1,
+    "businessName" TEXT NOT NULL DEFAULT '',
+    "industry" TEXT NOT NULL DEFAULT '',
+    "services" TEXT NOT NULL DEFAULT '[]',
+    "serviceAreas" TEXT NOT NULL DEFAULT '[]',
+    "businessDescription" TEXT NOT NULL DEFAULT '',
+    "uniqueSellingPoints" TEXT NOT NULL DEFAULT '[]',
+    "yearsInBusiness" TEXT NOT NULL DEFAULT '',
+    "phone" TEXT NOT NULL DEFAULT '',
+    "email" TEXT NOT NULL DEFAULT '',
+    "address" TEXT NOT NULL DEFAULT '',
+    "logoUrl" TEXT NOT NULL DEFAULT '',
+    "brandStyle" TEXT NOT NULL DEFAULT 'modern',
+    "hasExistingWebsite" BOOLEAN NOT NULL DEFAULT false,
+    "existingWebsiteUrl" TEXT NOT NULL DEFAULT '',
+    "scrapedData" TEXT NOT NULL DEFAULT '{}',
+    "contactFormLink" TEXT NOT NULL DEFAULT '',
+    "useInternalForm" BOOLEAN NOT NULL DEFAULT false,
+    "reviewLink" TEXT NOT NULL DEFAULT '',
+    "chatWidgetScript" TEXT NOT NULL DEFAULT '',
+    "bookingLink" TEXT NOT NULL DEFAULT '',
+    "socialLinks" TEXT NOT NULL DEFAULT '{}',
+    "sitemapData" TEXT NOT NULL DEFAULT '{}'
+);
+
+-- CreateTable
+CREATE TABLE "Page" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "projectId" TEXT NOT NULL,
+    "slug" TEXT NOT NULL,
+    "title" TEXT NOT NULL,
+    "pageType" TEXT NOT NULL DEFAULT 'page',
+    "service" TEXT NOT NULL DEFAULT '',
+    "location" TEXT NOT NULL DEFAULT '',
+    "content" TEXT NOT NULL DEFAULT '',
+    "metaTitle" TEXT NOT NULL DEFAULT '',
+    "metaDesc" TEXT NOT NULL DEFAULT '',
+    "imageUrl" TEXT NOT NULL DEFAULT '',
+    "imageData" TEXT NOT NULL DEFAULT '',
+    "serviceDesc" TEXT NOT NULL DEFAULT '',
+    "approved" BOOLEAN NOT NULL DEFAULT false,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "Page_projectId_fkey" FOREIGN KEY ("projectId") REFERENCES "Project" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+);
