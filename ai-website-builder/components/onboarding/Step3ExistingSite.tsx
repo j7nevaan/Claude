@@ -22,19 +22,16 @@ export default function Step3ExistingSite({ data, onChange }: Props) {
     setScrapeSuccess(false)
 
     try {
-      const res = await fetch('/api/scrape', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: data.existingWebsiteUrl }),
-      })
-      const result = await res.json()
+      const targetUrl = data.existingWebsiteUrl.startsWith('http') ? data.existingWebsiteUrl : `https://${data.existingWebsiteUrl}`
+      // Use allorigins CORS proxy for client-side scraping
+      const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`
+      const res = await fetch(proxyUrl, { signal: AbortSignal.timeout(12000) })
+      if (!res.ok) throw new Error(`Failed to fetch: HTTP ${res.status}`)
+      const json = await res.json()
+      const html: string = json.contents || ''
+      if (!html) throw new Error('No content returned from the site')
 
-      if (!res.ok) {
-        setScrapeError(result.error || 'Failed to scrape site')
-        return
-      }
-
-      const scraped = result.data
+      const scraped = parseHtml(html, targetUrl)
       const updates: Partial<ProjectData> = {
         scrapedData: scraped,
       }
@@ -52,10 +49,36 @@ export default function Step3ExistingSite({ data, onChange }: Props) {
 
       onChange(updates)
       setScrapeSuccess(true)
-    } catch {
-      setScrapeError('Network error. Please try again.')
+    } catch (err) {
+      setScrapeError(err instanceof Error ? err.message : 'Failed to scrape site')
     } finally {
       setScraping(false)
+    }
+  }
+
+  function parseHtml(html: string, url: string) {
+    const strip = (s: string) => s.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
+    const phoneMatch = html.match(/(?:tel:|phone|call)[:\s"]*([+\d\s().-]{7,20})/i) || html.match(/(\(?\d{3}\)?[\s.-]\d{3}[\s.-]\d{4})/)
+    const emailMatch = html.match(/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/)
+    const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i)
+    const metaMatch = html.match(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']+)["']/i)
+    const serviceSet = new Set<string>()
+    for (const pat of [/<h[23][^>]*>([^<]{5,60})<\/h[23]>/gi, /<li[^>]*>([^<]{5,50})<\/li>/gi]) {
+      let m: RegExpExecArray | null
+      while ((m = pat.exec(html)) !== null) {
+        const t = strip(m[1]).trim()
+        if (t.length > 3 && t.length < 60 && !/copyright|privacy|terms|home|about|contact|menu/i.test(t)) {
+          serviceSet.add(t); if (serviceSet.size >= 10) break
+        }
+      }
+    }
+    return {
+      description: metaMatch ? metaMatch[1] : (titleMatch ? strip(titleMatch[1]).replace(/\|.*$/, '').trim() : ''),
+      phone: phoneMatch ? phoneMatch[1].trim() : '',
+      email: emailMatch ? emailMatch[1] : '',
+      address: '',
+      services: Array.from(serviceSet).slice(0, 8),
+      sourceUrl: url,
     }
   }
 
