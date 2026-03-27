@@ -1,0 +1,72 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Project {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  status    String   @default("draft")
+  currentStep Int    @default(1)
+
+  // Business Info
+  businessName        String  @default("")
+  industry            String  @default("")
+  services            String  @default("[]")
+  serviceAreas        String  @default("[]")
+  businessDescription String  @default("")
+  uniqueSellingPoints String  @default("[]")
+  yearsInBusiness     String  @default("")
+
+  // Contact Info
+  phone   String @default("")
+  email   String @default("")
+  address String @default("")
+
+  // Branding
+  logoUrl    String @default("")
+  brandStyle String @default("modern")
+
+  // Existing Website
+  hasExistingWebsite Boolean @default(false)
+  existingWebsiteUrl String  @default("")
+  scrapedData        String  @default("{}")
+
+  // Integrations
+  contactFormLink  String  @default("")
+  useInternalForm  Boolean @default(false)
+  reviewLink       String  @default("")
+  chatWidgetScript String  @default("")
+  bookingLink      String  @default("")
+  socialLinks      String  @default("{}")
+
+  // Generated
+  sitemapData String @default("{}")
+
+  pages Page[]
+}
+
+model Page {
+  id        String  @id @default(cuid())
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  slug        String
+  title       String
+  pageType    String  @default("page")
+  service     String  @default("")
+  location    String  @default("")
+  content     String  @default("")
+  metaTitle   String  @default("")
+  metaDesc    String  @default("")
+  imageUrl    String  @default("")
+  imageData   String  @default("")
+  serviceDesc String  @default("")
+  approved    Boolean @default(false)
+
+  createdAt DateTime @default(now())
+}
